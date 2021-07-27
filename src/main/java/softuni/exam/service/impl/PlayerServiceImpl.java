@@ -18,6 +18,7 @@ import softuni.exam.util.ValidationUtil;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -91,7 +92,10 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public String exportPlayersWithALargerSalaryThanTheGiven() {
-        return "";
+        StringBuilder sb = new StringBuilder();
+        playerRepository.findAllBySalaryGreaterThan(BigDecimal.valueOf(100000))
+                .forEach(p -> sb.append(p.getFirstName()).append(System.lineSeparator()));
+        return sb.toString().trim();
     }
 
     @Override
