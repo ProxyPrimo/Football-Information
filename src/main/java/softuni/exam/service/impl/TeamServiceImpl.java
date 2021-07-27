@@ -1,9 +1,15 @@
 package softuni.exam.service.impl;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import softuni.exam.domain.dto.TeamDto;
 import softuni.exam.domain.dto.TeamRootDto;
+import softuni.exam.domain.entities.PictureEntity;
+import softuni.exam.domain.entities.TeamEntity;
 import softuni.exam.repository.TeamRepository;
+import softuni.exam.service.PictureService;
 import softuni.exam.service.TeamService;
+import softuni.exam.util.ValidationUtil;
 import softuni.exam.util.XmlParser;
 
 import javax.xml.bind.JAXBException;
@@ -17,20 +23,39 @@ public class TeamServiceImpl implements TeamService {
 
     private final TeamRepository teamRepository;
     private final XmlParser xmlParser;
+    private final ValidationUtil validationUtil;
+    private final PictureService pictureService;
+    private final ModelMapper modelMapper;
 
-    public TeamServiceImpl(TeamRepository teamRepository, XmlParser xmlParser) {
+    public TeamServiceImpl(TeamRepository teamRepository
+            , XmlParser xmlParser
+            , ValidationUtil validationUtil
+            , PictureService pictureService,
+                           ModelMapper modelMapper) {
         this.teamRepository = teamRepository;
         this.xmlParser = xmlParser;
+        this.validationUtil = validationUtil;
+        this.pictureService = pictureService;
+        this.modelMapper = modelMapper;
     }
 
     @Override
     public String importTeams() throws JAXBException {
         StringBuilder sb = new StringBuilder();
         TeamRootDto teams = xmlParser.parseXml(TeamRootDto.class, FILE_PATH);
-
-
-
-        return "";
+        for (TeamDto teamDto : teams.getTeam()) {
+            PictureEntity foundPicture = pictureService.findByUrl(teamDto.getPicture().getUrl());
+            if (!validationUtil.isValid(teamDto) || foundPicture == null) {
+                sb.append("Invalid team");
+            } else {
+                TeamEntity team = modelMapper.map(teamDto, TeamEntity.class);
+                team.setPicture(foundPicture);
+                teamRepository.saveAndFlush(team);
+                sb.append(team.getName());
+            }
+            sb.append(System.lineSeparator());
+        }
+        return sb.toString().trim();
     }
 
     @Override

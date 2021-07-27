@@ -39,7 +39,7 @@ public class PictureServiceImpl implements PictureService {
                 .parseXml(PictureRootDto.class, PICTURES_XML);
 
         for (PictureDto picture : pictures.getPictures()) {
-            if (!validationUtil.isValid(picture) || pictureRepository.findByUrl(picture.getUrl()) != null) {
+            if (!validationUtil.isValid(picture) || findByUrl(picture.getUrl()) != null) {
                 sb.append("Invalid picture");
             } else {
                 PictureEntity pic = this.modelMapper.map(picture, PictureEntity.class);
@@ -60,5 +60,10 @@ public class PictureServiceImpl implements PictureService {
     @Override
     public String readPicturesXmlFile() throws IOException {
         return Files.readString(Path.of(PICTURES_XML));
+    }
+
+    @Override
+    public PictureEntity findByUrl(String url) {
+        return pictureRepository.findByUrl(url);
     }
 }
