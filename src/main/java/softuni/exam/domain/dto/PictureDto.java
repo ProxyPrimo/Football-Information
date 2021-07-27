@@ -1,5 +1,6 @@
 package softuni.exam.domain.dto;
 
+import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -15,7 +16,7 @@ public class PictureDto {
     public PictureDto() {
     }
 
-
+    @NotNull
     public String getUrl() {
         return url;
     }

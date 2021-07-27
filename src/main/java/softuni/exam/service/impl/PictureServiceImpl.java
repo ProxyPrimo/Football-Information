@@ -1,10 +1,13 @@
 package softuni.exam.service.impl;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import softuni.exam.domain.dto.PictureDto;
 import softuni.exam.domain.dto.PictureRootDto;
+import softuni.exam.domain.entities.PictureEntity;
 import softuni.exam.repository.PictureRepository;
 import softuni.exam.service.PictureService;
+import softuni.exam.util.ValidationUtil;
 import softuni.exam.util.XmlParser;
 
 import javax.xml.bind.JAXBException;
@@ -19,10 +22,14 @@ public class PictureServiceImpl implements PictureService {
 
     private final PictureRepository pictureRepository;
     private final XmlParser xmlParser;
+    private final ValidationUtil validationUtil;
+    private final ModelMapper modelMapper;
 
-    public PictureServiceImpl(PictureRepository pictureRepository, XmlParser xmlParser) {
+    public PictureServiceImpl(PictureRepository pictureRepository, XmlParser xmlParser, ValidationUtil validationUtil, ModelMapper modelMapper) {
         this.pictureRepository = pictureRepository;
         this.xmlParser = xmlParser;
+        this.validationUtil = validationUtil;
+        this.modelMapper = modelMapper;
     }
 
     @Override
@@ -31,7 +38,18 @@ public class PictureServiceImpl implements PictureService {
         PictureRootDto pictures = xmlParser
                 .parseXml(PictureRootDto.class, PICTURES_XML);
 
-        return "";
+        for (PictureDto picture : pictures.getPictures()) {
+            if (!validationUtil.isValid(picture) || pictureRepository.findByUrl(picture.getUrl()) != null) {
+                sb.append("Invalid picture");
+            } else {
+                PictureEntity pic = this.modelMapper.map(picture, PictureEntity.class);
+                pictureRepository.saveAndFlush(pic);
+                sb.append(String.format("Successfully imported picture - %s"
+                        , picture.getUrl()));
+            }
+            sb.append(System.lineSeparator());
+        }
+        return sb.toString();
     }
 
     @Override
