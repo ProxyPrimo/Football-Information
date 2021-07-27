@@ -96,6 +96,11 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public String exportPlayersInATeam() {
-        return "";
+        StringBuilder sb = new StringBuilder();
+        playerRepository.findAllByTeamName("North Hub").forEach(p -> {
+            sb.append(p.getFirstName()).append(System.lineSeparator());
+        });
+
+        return sb.toString().trim();
     }
 }
