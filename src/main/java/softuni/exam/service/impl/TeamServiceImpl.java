@@ -68,4 +68,10 @@ public class TeamServiceImpl implements TeamService {
         return Files.readString(Path.of(FILE_PATH));
     }
 
+    @Override
+    public TeamEntity findByNameAndByPictureUrl(String name, String url) {
+        PictureEntity pictureEntity = pictureService.findByUrl(url);
+        return teamRepository.findByNameAndPicture(name, pictureEntity);
+    }
+
 }
